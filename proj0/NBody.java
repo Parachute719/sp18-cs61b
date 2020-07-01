@@ -25,7 +25,7 @@ public class NBody {
 		return planets;
 	}
 
-	public static String imageToDraw = "images/starfield.jpg";
+	private static String imageToDraw = "images/starfield.jpg";
 	
 
 
