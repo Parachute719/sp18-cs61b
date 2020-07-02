@@ -1,5 +1,5 @@
-public class ArrayDeque<Item> {
-    private Item[] items;
+public class ArrayDeque<T> {
+    private T[] items;
     private int size;
     private int nextlast;
     private int nextfirst;
@@ -9,7 +9,7 @@ public class ArrayDeque<Item> {
 
     public ArrayDeque() {
         capacity = initialCapacity;
-        items = (Item[]) new Object[initialCapacity];
+        items = (T[]) new Object[initialCapacity];
         size = 0;
         nextlast = 0;
         nextfirst = capacity - 1;
@@ -31,19 +31,19 @@ public class ArrayDeque<Item> {
     }
 
     /** expand the size of the array if its size is full. */
-    public void expand() {
+    private void expand() {
         if (size == capacity) {
             capacity = capacity * factor;
             resize(capacity);
-            for(int i = 0; i < size; i++) {
-               nextlast = plusOne(nextlast);
-               nextfirst = plusOne(nextfirst);
+            for (int i = 0; i < size; i++) {
+                nextlast = plusOne(nextlast);
+                nextfirst = plusOne(nextfirst);
             }
         }
     }
 
     /** contract the size of the array if its usage ratio is less than 25%. */
-    public void contract() {
+    private void contract() {
         double R = (double) size / capacity;
         if (R < 0.25 && capacity >= 16) {
             capacity = capacity / factor;
@@ -55,15 +55,15 @@ public class ArrayDeque<Item> {
     }
 
     /** change the size of the array to a given capacity. */
-    private void resize(int capacity) {
-        Item[] a = (Item[]) new Object[capacity];
+    private void resize(int capa) {
+        T[] a = (T[]) new Object[capa];
         System.arraycopy(items, 0, a, 0, size);
         items = a;
     }
 
-    /** add an item to the back end of the array,
+    /** add an  to the back end of the array,
       * must take constant time, except during resizing operations. */
-    public void addLast(Item x) {
+    public void addLast(T x) {
         expand();
 
         items[nextlast] = x;
@@ -71,9 +71,9 @@ public class ArrayDeque<Item> {
         nextlast = plusOne(nextlast);
     }
 
-    /** add an item to the front end of the array,
+    /** add an  to the front end of the array,
       * must take constant time, except during resizing operations. */
-    public void addFirst(Item x) {
+    public void addFirst(T x) {
         expand();
 
         items[nextfirst] = x;
@@ -81,43 +81,43 @@ public class ArrayDeque<Item> {
         nextfirst = minusOne(nextfirst);
     }
 
-    /** remove an item from the back end of the array,
+    /** remove an  from the back end of the array,
       * must take constant time, except during resizing operations. */
-    public Item removeLast() {
+    public T removeLast() {
         contract();
 
         if (isEmpty()) {
             return null;
         }
         nextlast = minusOne(nextlast);
-        Item lastItem = items[nextlast];
+        T lastItem = items[nextlast];
         items[nextlast] = null;
         size -= 1;
         return lastItem;
     }
 
-    /** remove an item to the back end of the array,
+    /** remove an  to the back end of the array,
       * must take constant time, except during resizing operations. */
-    public Item removeFirst() {
+    public T removeFirst() {
         contract();
 
         if (isEmpty()) {
             return null;
         }
         nextfirst = plusOne(nextfirst);
-        Item firstItem = items[nextfirst];
+        T firstitem = items[nextfirst];
         items[nextfirst] = null;
         size -= 1;
-        return firstItem;
+        return firstitem;
     }
 
-    /** return the item of index i in the array. */
-    public Item get(int i) {
+    /** return the  of index i in the array. */
+    public T get(int i) {
         return items[i];
     }
 
     /** return the size of the array.
-      * invariant: size is the number of items in the array. */
+      * invariant: size is the number of s in the array. */
     public int size() {
         return size;
     }
@@ -141,7 +141,7 @@ public class ArrayDeque<Item> {
     }
 
     /** unofficial test code */
-    /**
+
     public static void main(String[] args) {
         ArrayDeque<Integer> testArray = new ArrayDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -160,7 +160,7 @@ public class ArrayDeque<Item> {
         testArray.removeLast();
 
         testArray.printDeque();
-    } */
+    }
 
 }
 
