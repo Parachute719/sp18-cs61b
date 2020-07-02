@@ -35,20 +35,27 @@ public class ArrayDeque<Item> {
         if (size == capacity) {
             capacity = capacity * factor;
             resize(capacity);
+            for(int i = 0; i < size; i++) {
+               nextlast = plusOne(nextlast);
+               nextfirst = plusOne(nextfirst);
+            }
         }
     }
 
     /** contract the size of the array if its usage ratio is less than 25%. */
     public void contract() {
-        double R = size / capacity;
-        if (R<0.25 && capacity>=16) {
+        double R = (double) size / capacity;
+        if (R < 0.25 && capacity >= 16) {
             capacity = capacity / factor;
             resize(capacity);
+            for (int i = 0; i < capacity; i++) {
+                nextfirst = minusOne(nextfirst);
+            }
         }
     }
 
     /** change the size of the array to a given capacity. */
-    public void resize(int capacity) {
+    private void resize(int capacity) {
         Item[] a = (Item[]) new Object[capacity];
         System.arraycopy(items, 0, a, 0, size);
         items = a;
@@ -79,7 +86,7 @@ public class ArrayDeque<Item> {
     public Item removeLast() {
         contract();
 
-        if(isEmpty()) {
+        if (isEmpty()) {
             return null;
         }
         nextlast = minusOne(nextlast);
@@ -91,10 +98,10 @@ public class ArrayDeque<Item> {
 
     /** remove an item to the back end of the array,
       * must take constant time, except during resizing operations. */
-    public Item removefirst() {
+    public Item removeFirst() {
         contract();
 
-        if(isEmpty()) {
+        if (isEmpty()) {
             return null;
         }
         nextfirst = plusOne(nextfirst);
@@ -118,10 +125,43 @@ public class ArrayDeque<Item> {
     /** judge if the array is empty.
       * return true when the array is empty. */
     public boolean isEmpty() {
-        if(size == 0) {
+        if (size == 0) {
             return true;
         }
         return false;
     }
 
+    public void printDeque() {
+        int currentindex = plusOne(nextfirst);
+        while (currentindex != nextlast) {
+            System.out.print(items[currentindex] + " ");
+            currentindex = plusOne(currentindex);
+        }
+        System.out.println();
+    }
+
+    /** unofficial test code */
+    /**
+    public static void main(String[] args) {
+        ArrayDeque<Integer> testArray = new ArrayDeque<>();
+        for (int i = 0; i < 10; i++) {
+            testArray.addLast(i);
+        }
+
+        for (int i = 10; i < 14; i++) {
+            testArray.addFirst(i);
+        }
+
+        testArray.printDeque();
+
+        testArray.addFirst(30);
+        testArray.addLast(40);
+        testArray.removeFirst();
+        testArray.removeLast();
+
+        testArray.printDeque();
+    } */
+
 }
+
+
