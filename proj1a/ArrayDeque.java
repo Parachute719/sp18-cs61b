@@ -121,9 +121,18 @@ public class ArrayDeque<T> {
         return firstitem;
     }
 
-    /** return the  of index i in the array. */
-    public T get(int i) {
-        return items[i];
+    /** return the item of a given index in the array. */
+    public T get(int index) {
+        if (index >= size) {
+            return null;
+        }
+        currentfirst = plusOne(nextfirst, capacity);
+        T[] a = (T[]) new Object[size];
+        for (int i = 0; i < size; i++) {
+            a[i] = items[currentfirst];
+            currentfirst = plusOne(currentfirst, capacity);
+        }
+        return a[index];
     }
 
     /** return the size of the array.
@@ -142,10 +151,10 @@ public class ArrayDeque<T> {
     }
 
     public void printDeque() {
-        int currentindex = plusOne(nextfirst, capacity);
-        while (currentindex != nextlast) {
-            System.out.print(items[currentindex] + " ");
-            currentindex = plusOne(currentindex, capacity);
+        currentfirst = plusOne(nextfirst, capacity);
+        while (currentfirst != nextlast) {
+            System.out.print(items[currentfirst] + " ");
+            currentfirst = plusOne(currentfirst, capacity);
         }
         System.out.println();
     }
@@ -163,7 +172,7 @@ public class ArrayDeque<T> {
         }
 
         testArray.printDeque();
-        testArray.get(0);
+        System.out.println(testArray.get(18));
 
         testArray.addFirst(30);
         testArray.addLast(40);
