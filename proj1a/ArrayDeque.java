@@ -6,6 +6,8 @@ public class ArrayDeque<T> {
     private int capacity;
     private int initialCapacity = 8;
     private int factor = 2;
+    private int currentfirst;
+    private int currentlast;
 
     public ArrayDeque() {
         capacity = initialCapacity;
@@ -16,14 +18,14 @@ public class ArrayDeque<T> {
     }
 
     /** decrease a given index in the circle array. */
-    public int minusOne(int index) {
+    private int minusOne(int index) {
         if (index == 0) {
             return capacity - 1;
         }
         return index - 1;
     }
     /** increase a given index in the circle array. */
-    public int plusOne(int index) {
+    private int plusOne(int index) {
         if (index == capacity - 1) {
             return 0;
         }
@@ -33,12 +35,10 @@ public class ArrayDeque<T> {
     /** expand the size of the array if its size is full. */
     private void expand() {
         if (size == capacity) {
+            currentfirst = plusOne(nextfirst);
+            currentlast = minusOne(nextlast);
             capacity = capacity * factor;
             resize(capacity);
-            for (int i = 0; i < size; i++) {
-                nextlast = plusOne(nextlast);
-                nextfirst = plusOne(nextfirst);
-            }
         }
     }
 
@@ -46,18 +46,26 @@ public class ArrayDeque<T> {
     private void contract() {
         double R = (double) size / capacity;
         if (R < 0.25 && capacity >= 16) {
+            currentfirst = plusOne(nextfirst);
+            currentlast = minusOne(nextlast);
             capacity = capacity / factor;
             resize(capacity);
-            for (int i = 0; i < capacity; i++) {
-                nextfirst = minusOne(nextfirst);
-            }
         }
     }
 
-    /** change the size of the array to a given capacity. */
+    /** change the size of the array to a given capacity;
+     *  rearrange the sequence in the new array. */
     private void resize(int capa) {
         T[] a = (T[]) new Object[capa];
-        System.arraycopy(items, 0, a, 0, size);
+        nextfirst = capacity - 1;
+        nextlast = 0;
+        for (int i = currentfirst; i != currentlast; i = plusOne(i)) {
+            a[nextlast] = items[i];
+            nextfirst = plusOne(nextlast);
+        }
+        a[nextlast] = items[currentlast];
+        nextlast = plusOne(nextlast);
+        items = a;
         items = a;
     }
 
@@ -141,7 +149,7 @@ public class ArrayDeque<T> {
     }
 
     /** unofficial test code */
-
+    /**
     public static void main(String[] args) {
         ArrayDeque<Integer> testArray = new ArrayDeque<>();
         for (int i = 0; i < 10; i++) {
@@ -160,8 +168,6 @@ public class ArrayDeque<T> {
         testArray.removeLast();
 
         testArray.printDeque();
-    }
+    } */
 
 }
-
-

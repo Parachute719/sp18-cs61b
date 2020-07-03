@@ -22,12 +22,12 @@ public class LinkedListDeque<T> {
         size = 0;
     }
 
-    public LinkedListDeque(T item) {
+    /** public LinkedListDeque(T item) {
         sentinel = new StuffNode((T) null, null, null);
         sentinel.next = new StuffNode(item, sentinel, sentinel);
         sentinel.prev = sentinel.next;
         size = 1;
-    }
+    } */
 
     /** The Deque API */
     public void addFirst(T item) {
@@ -94,7 +94,7 @@ public class LinkedListDeque<T> {
         return p.item;
     }
 
-    public T getRecursiveHelper(StuffNode p, int index) {
+    private T getRecursiveHelper(StuffNode p, int index) {
         if (index == 0) {
             return p.item;
         }
