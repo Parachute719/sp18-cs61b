@@ -61,7 +61,7 @@ public class ArrayDeque<T> {
         nextlast = 0;
         for (int i = currentfirst; i != currentlast; i = plusOne(i)) {
             a[nextlast] = items[i];
-            nextfirst = plusOne(nextlast);
+            nextlast = plusOne(nextlast);
         }
         a[nextlast] = items[currentlast];
         nextlast = plusOne(nextlast);
@@ -161,6 +161,7 @@ public class ArrayDeque<T> {
         }
 
         testArray.printDeque();
+        testArray.get(0);
 
         testArray.addFirst(30);
         testArray.addLast(40);
