@@ -8,6 +8,7 @@ public class ArrayDeque<T> {
     private int factor = 2;
     private int currentfirst;
     private int currentlast;
+    private int oldCapacity;
 
     public ArrayDeque() {
         capacity = initialCapacity;
@@ -18,15 +19,15 @@ public class ArrayDeque<T> {
     }
 
     /** decrease a given index in the circle array. */
-    private int minusOne(int index) {
+    private int minusOne(int index, int capa) {
         if (index == 0) {
-            return capacity - 1;
+            return capa - 1;
         }
         return index - 1;
     }
     /** increase a given index in the circle array. */
-    private int plusOne(int index) {
-        if (index == capacity - 1) {
+    private int plusOne(int index, int capa) {
+        if (index == capa - 1) {
             return 0;
         }
         return index + 1;
@@ -35,8 +36,7 @@ public class ArrayDeque<T> {
     /** expand the size of the array if its size is full. */
     private void expand() {
         if (size == capacity) {
-            currentfirst = plusOne(nextfirst);
-            currentlast = minusOne(nextlast);
+            oldCapacity = capacity;
             capacity = capacity * factor;
             resize(capacity);
         }
@@ -46,8 +46,7 @@ public class ArrayDeque<T> {
     private void contract() {
         double R = (double) size / capacity;
         if (R < 0.25 && capacity >= 16) {
-            currentfirst = plusOne(nextfirst);
-            currentlast = minusOne(nextlast);
+            oldCapacity = capacity;
             capacity = capacity / factor;
             resize(capacity);
         }
@@ -56,16 +55,19 @@ public class ArrayDeque<T> {
     /** change the size of the array to a given capacity;
      *  rearrange the sequence in the new array. */
     private void resize(int capa) {
+        currentfirst = plusOne(nextfirst, oldCapacity);
+        currentlast = minusOne(nextlast, oldCapacity);
+
         T[] a = (T[]) new Object[capa];
         nextfirst = capacity - 1;
         nextlast = 0;
-        for (int i = currentfirst; i != currentlast; i = plusOne(i)) {
+
+        for (int i = currentfirst; i != currentlast; i = plusOne(i, oldCapacity)) {
             a[nextlast] = items[i];
-            nextlast = plusOne(nextlast);
+            nextlast = plusOne(nextlast, capa);
         }
         a[nextlast] = items[currentlast];
-        nextlast = plusOne(nextlast);
-        items = a;
+        nextlast = plusOne(nextlast, capa);
         items = a;
     }
 
@@ -76,7 +78,7 @@ public class ArrayDeque<T> {
 
         items[nextlast] = x;
         size += 1;
-        nextlast = plusOne(nextlast);
+        nextlast = plusOne(nextlast, capacity);
     }
 
     /** add an  to the front end of the array,
@@ -86,7 +88,7 @@ public class ArrayDeque<T> {
 
         items[nextfirst] = x;
         size += 1;
-        nextfirst = minusOne(nextfirst);
+        nextfirst = minusOne(nextfirst, capacity);
     }
 
     /** remove an  from the back end of the array,
@@ -97,7 +99,7 @@ public class ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-        nextlast = minusOne(nextlast);
+        nextlast = minusOne(nextlast, capacity);
         T lastItem = items[nextlast];
         items[nextlast] = null;
         size -= 1;
@@ -112,7 +114,7 @@ public class ArrayDeque<T> {
         if (isEmpty()) {
             return null;
         }
-        nextfirst = plusOne(nextfirst);
+        nextfirst = plusOne(nextfirst, capacity);
         T firstitem = items[nextfirst];
         items[nextfirst] = null;
         size -= 1;
@@ -140,10 +142,10 @@ public class ArrayDeque<T> {
     }
 
     public void printDeque() {
-        int currentindex = plusOne(nextfirst);
+        int currentindex = plusOne(nextfirst, capacity);
         while (currentindex != nextlast) {
             System.out.print(items[currentindex] + " ");
-            currentindex = plusOne(currentindex);
+            currentindex = plusOne(currentindex, capacity);
         }
         System.out.println();
     }
@@ -156,7 +158,7 @@ public class ArrayDeque<T> {
             testArray.addLast(i);
         }
 
-        for (int i = 10; i < 14; i++) {
+        for (int i = 10; i < 18; i++) {
             testArray.addFirst(i);
         }
 
@@ -166,7 +168,10 @@ public class ArrayDeque<T> {
         testArray.addFirst(30);
         testArray.addLast(40);
         testArray.removeFirst();
-        testArray.removeLast();
+        for (int i = 0; i < 8; i++) {
+            testArray.removeLast();
+        }
+
 
         testArray.printDeque();
     } */
