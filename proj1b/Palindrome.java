@@ -40,7 +40,7 @@ public class Palindrome {
         return isPalindromeHelper(wordList, wordList.size(), cc);
     }
 
-    public boolean isPalindromeHelper(Deque<Character> w, int size, CharacterComparator cc) {
+    private boolean isPalindromeHelper(Deque<Character> w, int size, CharacterComparator cc) {
         if (size == 0 || size == 1) {
             return true;
         } else {
