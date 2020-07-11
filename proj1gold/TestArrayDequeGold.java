@@ -5,10 +5,10 @@ public class TestArrayDequeGold {
 
     @Test
     public void testArrayDeque() {
-        /** addLast */
         StudentArrayDeque<Integer> student = new StudentArrayDeque<Integer>();
         ArrayDequeSolution<Integer> solution = new ArrayDequeSolution<Integer>();
-        for (int i = 0; i < 10; i++) {
+        /** addLast */
+        /** for (int i = 0; i < 10; i++) {
             int random = StdRandom.uniform(100);
             student.addLast(random);
             solution.addLast(random);
@@ -19,10 +19,10 @@ public class TestArrayDequeGold {
             assertEquals("Oh noooo!\nThis is bad:\n   Random number " + actual
                             + " not equal to " + expected + "!",
                     expected, actual);
-        }
+        } */
 
         /** addFirst */
-        student = new StudentArrayDeque<Integer>();
+        /**student = new StudentArrayDeque<Integer>();
         solution = new ArrayDequeSolution<Integer>();
         for (int i = 0; i < 10; i++) {
             int random = StdRandom.uniform(100);
@@ -35,10 +35,10 @@ public class TestArrayDequeGold {
             assertEquals("Oh noooo!\nThis is bad:\n   Random number " + actual
                             + " not equal to " + expected + "!",
                     expected, actual);
-        }
+        } */
 
         /** removeFirst */
-        student = new StudentArrayDeque<Integer>();
+        /**student = new StudentArrayDeque<Integer>();
         solution = new ArrayDequeSolution<Integer>();
         for (int i = 0; i < 10; i++) {
             int random = StdRandom.uniform(100);
@@ -51,11 +51,11 @@ public class TestArrayDequeGold {
             assertEquals("Oh noooo!\nThis is bad:\n   Random number " + actual
                             + " not equal to " + expected + "!",
                     expected, actual);
-        }
+        } */
 
         /** removeLast */
-        student = new StudentArrayDeque<Integer>();
-        solution = new ArrayDequeSolution<Integer>();
+        //student = new StudentArrayDeque<Integer>();
+        //solution = new ArrayDequeSolution<Integer>();
         String message = "";
         for (int i = 0; i < 10; i++) {
             int random = StdRandom.uniform(100);
@@ -66,7 +66,7 @@ public class TestArrayDequeGold {
         for (int i = 0; i < 10; i++) {
             Integer expected = solution.removeLast();
             Integer actual = student.removeLast();
-            message += "\nremoveLast(): " +actual;
+            message += "\nremoveLast(): " + actual;
             assertEquals(message, expected, actual);
         }
 
