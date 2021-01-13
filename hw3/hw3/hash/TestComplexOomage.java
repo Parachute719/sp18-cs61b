@@ -1,5 +1,6 @@
 package hw3.hash;
 
+import edu.princeton.cs.introcs.StdRandom;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,27 +25,35 @@ public class TestComplexOomage {
     @Test
     public void testRandomOomagesHashCodeSpread() {
         List<Oomage> oomages = new ArrayList<>();
-        int N = 10000;
 
-        for (int i = 0; i < N; i += 1) {
-            oomages.add(ComplexOomage.randomComplexOomage());
+        for (int i = 0; i < 1000; i += 1) {
+            ArrayList<Integer> params = new ArrayList<>();
+            for (int m = 0; m < 4; m++) { // generate the first 32bits(Integer in Java are 32bits)
+                params.add(StdRandom.uniform(255));
+            }
+            for (int m = 0; m < 4; m++) { // generate the same 32bits to cause hashcodes collision
+                params.add(m);
+            }
+            oomages.add(new ComplexOomage(params));
         }
 
         assertTrue(OomageTestUtility.haveNiceHashCodeSpread(oomages, 10));
     }
 
-    /* TODO: Create a list of Complex Oomages called deadlyList
+    /*
      * that shows the flaw in the hashCode function.
      */
-    /*
+
     @Test
     public void testWithDeadlyParams() {
         List<Oomage> deadlyList = new ArrayList<>();
-
-        // Your code here.
+        int N = 1000;
+        for (int i = 0; i < N; i++) {
+            deadlyList.add(ComplexOomage.randomComplexOomage());
+        }
 
         assertTrue(OomageTestUtility.haveNiceHashCodeSpread(deadlyList, 10));
-    } */
+    }
 
     /** Calls tests for SimpleOomage. */
     public static void main(String[] args) {
