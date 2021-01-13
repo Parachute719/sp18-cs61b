@@ -25,16 +25,10 @@ public class TestComplexOomage {
     @Test
     public void testRandomOomagesHashCodeSpread() {
         List<Oomage> oomages = new ArrayList<>();
+        int N = 10000;
 
-        for (int i = 0; i < 1000; i += 1) {
-            ArrayList<Integer> params = new ArrayList<>();
-            for (int m = 0; m < 4; m++) { // generate the first 32bits(Integer in Java are 32bits)
-                params.add(StdRandom.uniform(255));
-            }
-            for (int m = 0; m < 4; m++) { // generate the same 32bits to cause hashcodes collision
-                params.add(m);
-            }
-            oomages.add(new ComplexOomage(params));
+        for (int i = 0; i < N; i += 1) {
+            oomages.add(ComplexOomage.randomComplexOomage());
         }
 
         assertTrue(OomageTestUtility.haveNiceHashCodeSpread(oomages, 10));
@@ -47,9 +41,16 @@ public class TestComplexOomage {
     @Test
     public void testWithDeadlyParams() {
         List<Oomage> deadlyList = new ArrayList<>();
-        int N = 1000;
-        for (int i = 0; i < N; i++) {
-            deadlyList.add(ComplexOomage.randomComplexOomage());
+
+        for (int i = 0; i < 1000; i += 1) {
+            ArrayList<Integer> params = new ArrayList<>();
+            for (int m = 0; m < 4; m++) { // generate the first 32bits(Integer in Java are 32bits)
+                params.add(StdRandom.uniform(255));
+            }
+            for (int m = 0; m < 4; m++) { // generate the same 32bits to cause hashcodes collision
+                params.add(m);
+            }
+            deadlyList.add(new ComplexOomage(params));
         }
 
         assertTrue(OomageTestUtility.haveNiceHashCodeSpread(deadlyList, 10));
