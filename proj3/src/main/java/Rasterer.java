@@ -9,6 +9,21 @@ import java.util.Map;
  */
 public class Rasterer {
 
+    private static final double[] LONDPP_AT_DEPTH = {
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(0)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(1)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(2)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(3)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(4)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(5)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(6)),
+            (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (MapServer.TILE_SIZE * numTilesAtDepth(7)),
+    };
+
+    private static int numTilesAtDepth(int depth) {
+        return (int) Math.pow(2, depth);
+    }
+
     public Rasterer() {
         // YOUR CODE HERE
     }
@@ -42,11 +57,139 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        // System.out.println(params);
+        System.out.println(params);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+
+        double lrlon = params.get("lrlon");
+        double ullon = params.get("ullon");
+        double lrlat = params.get("lrlat");
+        double ullat = params.get("ullat");
+        double width = params.get("w");
+
+        double queryBoxLonDPP = lonDPP(ullon, lrlon, width);
+        int depth = selectDepth(queryBoxLonDPP);
+        boolean success = areValidCoordinates(ullon, ullat, lrlon, lrlat);
+
+        if (!success) {
+            results.put("query_success", success);
+            results.put("depth", depth);
+            results.put("render_grid", null);
+            results.put("raster_ul_lon", 0);
+            results.put("raster_ul_lat", 0);
+            results.put("raster_lr_lon", 0);
+            results.put("raster_lr_lat", 0);
+        } else {
+            String[][] renderGrid = selectRenderGrid(ullon, ullat, lrlon, lrlat, depth);
+            results.put("query_success", success);
+            results.put("depth", depth);
+            results.put("render_grid", renderGrid);
+            results.put("raster_ul_lon", ullonConverter(ullon, depth));
+            results.put("raster_ul_lat", ullatConverter(ullat, depth));
+            results.put("raster_lr_lon", lrlonConverter(lrlon, depth));
+            results.put("raster_lr_lat", lrlatConverter(lrlat, depth));
+        }
+
+        //System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
+                           //+ "your browser.");
         return results;
     }
+
+    private double lonDPP(double lon1, double lon2, double imageWidth) {
+        return Math.abs(lon1 - lon2) / imageWidth;
+    }
+
+    private int selectDepth(double LonDPP) {
+        for (int i = 0; i < 8; i++) {
+            if (LonDPP >= LONDPP_AT_DEPTH[i]) {
+                return i;
+            }
+        }
+        return 7;
+    }
+
+    private boolean areValidCoordinates(double ullon, double ullat, double lrlon, double lrlat) {
+        return (ullon < lrlon && ullat > lrlat)
+                && (ullon < MapServer.ROOT_LRLON && lrlon > MapServer.ROOT_ULLON)
+                && (ullat > MapServer.ROOT_LRLAT && lrlat < MapServer.ROOT_ULLAT);
+    }
+
+    private String[][] selectRenderGrid(double ullon, double ullat, double lrlon, double lrlat, int depth) {
+        int xStart = xStartConverter(ullon, depth);
+        int xEnd = xEndConverter(lrlon, depth);
+        int yStart = yStartConverter(ullat, depth);
+        int yEnd = yEndConverter(lrlat, depth);
+        int xNum = xEnd - xStart + 1;
+        int yNum = yEnd - yStart + 1;
+        String[][] renderGrid = new String[yNum][xNum];
+        for (int i = xStart; i <= xEnd; i++) {
+            for (int j = yStart; j <= yEnd; j++) {
+                renderGrid[j - yStart][i - xStart] = "d" + depth + "_x" + i + "_y" + j + ".png";
+                System.out.println(renderGrid[j - yStart][i - xStart]);
+            }
+        }
+        return renderGrid;
+
+    }
+
+    private double ullonConverter(double lon, int depth) {
+        double lonUnit = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / numTilesAtDepth(depth);
+        int x = xStartConverter(lon, depth);
+        return (MapServer.ROOT_ULLON + lonUnit * x);
+    }
+
+    private double lrlonConverter(double lon, int depth) {
+        double lonUnit = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / numTilesAtDepth(depth);
+        int x = xEndConverter(lon, depth) + 1;
+        return (MapServer.ROOT_ULLON + lonUnit * x);
+    }
+
+    private double ullatConverter(double lat, int depth) {
+        double latUnit = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / numTilesAtDepth(depth);
+        int y = yStartConverter(lat, depth);
+        return (MapServer.ROOT_ULLAT - latUnit * y);
+    }
+
+    private double lrlatConverter(double lat, int depth) {
+        double latUnit = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / numTilesAtDepth(depth);
+        int y = yEndConverter(lat, depth) + 1;
+        return (MapServer.ROOT_ULLAT - latUnit * y);
+    }
+
+    private int xStartConverter(double ullon, int depth) {
+        double lonUnit = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / numTilesAtDepth(depth);
+        if (ullon <= MapServer.ROOT_ULLON) {
+            return 0;
+        } else {
+            return (int) ((ullon - MapServer.ROOT_ULLON) / lonUnit);
+        }
+    }
+
+    private int xEndConverter(double lrlon, int depth) {
+        double lonUnit = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / numTilesAtDepth(depth);
+        if (lrlon >= MapServer.ROOT_LRLON) {
+            return (numTilesAtDepth(depth) - 1);
+        } else {
+            return (int) ((lrlon - MapServer.ROOT_ULLON) / lonUnit);
+        }
+    }
+
+    private int yStartConverter(double ullat, int depth) {
+        double latUnit = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / numTilesAtDepth(depth);
+        if (ullat >= MapServer.ROOT_ULLAT) {
+            return 0;
+        } else {
+            return (int) ((MapServer.ROOT_ULLAT - ullat) / latUnit);
+        }
+    }
+
+    private int yEndConverter(double lrlat, int depth) {
+        double latUnit = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / numTilesAtDepth(depth);
+        if (lrlat <= MapServer.ROOT_LRLAT) {
+            return (numTilesAtDepth(depth) - 1);
+        } else {
+            return (int) ((MapServer.ROOT_ULLAT - lrlat) / latUnit);
+        }
+    }
+
 
 }

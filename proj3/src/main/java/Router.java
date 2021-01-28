@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,9 +22,67 @@ public class Router {
      * @param destlat The latitude of the destination location.
      * @return A list of node id's in the order visited on the shortest path.
      */
-    public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
-                                          double destlon, double destlat) {
-        return null; // FIXME
+    public static List<Long> shortestPath(GraphDB g, double stlon, double stlat, double destlon, double destlat) {
+        long stID = g.closest(stlon, stlat);
+        long destID = g.closest(destlon, destlat);
+        Map<Long, Double> distToSt = new HashMap<>();
+        Map<Long, Double> distToDest = new HashMap<>();
+
+        for (long n : g.vertices()) {
+            distToSt.put(n, Double.POSITIVE_INFINITY);
+            distToDest.put(n, g.distance(n, destID));
+        }
+        distToSt.replace(stID, 0.0);
+
+        Comparator<Long> cmp = new Comparator<Long>() {
+            @Override
+            public int compare(Long o1, Long o2) {
+                double priority1 = distToSt.get(o1) + distToDest.get(o1);
+                double priority2 = distToSt.get(o2) + distToDest.get(o2);
+                return Double.compare(priority1, priority2);
+            }
+        };
+        PriorityQueue<Long> pq = new PriorityQueue<Long>(cmp);
+        Map<Long, Long> edgeTo = new HashMap<>();
+        Set<Long> marked = new HashSet<>();
+
+        pq.add(stID);
+        while (!pq.isEmpty()) {
+            long v = pq.poll();
+            if (v == destID) {
+                break;
+            }
+            marked.add(v);
+            for (long w: g.adjacent(v)) {
+                if (!marked.contains(w)) {
+                    relax(g, v, w, edgeTo, distToSt, pq);
+                }
+            }
+        }
+
+        List<Long> sPath = new ArrayList<>();
+        sPath.add(destID);
+
+        long id = destID;
+        while (id != stID) {
+            if (edgeTo.get(id) == null) {
+                return new ArrayList<>();
+            }
+            id = edgeTo.get(id);
+            sPath.add(0, id);
+        }
+
+
+
+        return sPath;
+    }
+
+    private static void relax(GraphDB g, long v, long w, Map<Long, Long> edgeTo, Map<Long, Double> distToSt, PriorityQueue<Long> pq) {
+        if (distToSt.get(v) + g.distance(v, w) < distToSt.get(w)) {
+            distToSt.replace(w, distToSt.get(v) + g.distance(v, w));
+        }
+        pq.add(w);
+        edgeTo.put(w, v);
     }
 
     /**
@@ -37,7 +94,31 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        List<NavigationDirection> result = new ArrayList<>();
+        NavigationDirection nd = new NavigationDirection();
+        nd.direction = NavigationDirection.START;
+        nd.way = g.wayName(route.get(0), route.get(1));
+
+        for (int i = 1; i < route.size(); i++) {
+            long pre = route.get(i - 1);
+            long cur = route.get(i);
+            nd.distance += g.distance(pre, cur);
+
+            if (i == route.size() - 1) {
+                result.add(nd);
+                break;
+            }
+
+            long next = route.get(i + 1);
+            if (!nd.way.equals(g.wayName(cur, next))) {
+                result.add(nd);
+                nd = new NavigationDirection();
+                nd.direction = getDirection(g, pre, cur, next);
+                nd.way = g.wayName(cur, next);
+            }
+        }
+
+        return result;
     }
 
 
@@ -159,5 +240,36 @@ public class Router {
         public int hashCode() {
             return Objects.hash(direction, way, distance);
         }
+    }
+
+    public static int getDirection(GraphDB g, long pre, long cur, long next) {
+        double d1 = g.bearing(pre, cur);
+        double d2 = g.bearing(cur, next);
+        double diff = d2 - d1;
+        if (diff > 180) {
+            diff -= 360;
+        }
+        if (diff < -180) {
+            diff += 360;
+        }
+        if (diff <= 15 && diff >= -15) {
+            return 1;
+        }
+        if (diff > -30 && diff <= -15) {
+            return 2;
+        }
+        if (diff > 15 && diff <= 30) {
+            return 3;
+        }
+        if (diff > 30 && diff <= 100) {
+            return 4;
+        }
+        if (diff < -30 && diff >= -100) {
+            return 5;
+        }
+        if (diff < -100) {
+            return 6;
+        }
+        return 7;
     }
 }
